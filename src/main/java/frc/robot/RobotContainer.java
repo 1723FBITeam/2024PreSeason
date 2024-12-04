@@ -26,6 +26,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.FunnelMotorSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
+import edu.wpi.first.wpilibj.AnalogPotentiometer;
 
 public class RobotContainer {
   private double MaxSpeed = TunerConstants.kSpeedAt12VoltsMps; // kSpeedAt12VoltsMps desired top speed
@@ -33,7 +34,8 @@ public class RobotContainer {
 
   private final FunnelMotorSubsystem funnelMotorSubsystem = new FunnelMotorSubsystem();
   /* Setting up bindings for necessary control of the swerve drive platform */
-  private final CommandXboxController joystick = new CommandXboxController(0); // My joystick
+  private final CommandXboxController joystick1 = new CommandXboxController(0); // My joystick
+  private final CommandXboxController joystick2 = new CommandXboxController(1); // My joystick
   private final CommandSwerveDrivetrain drivetrain = TunerConstants.DriveTrain; // My drivetrain
   private final ShootCommand shooter = new ShootCommand(new ShooterSubsystem());
   private final FunnelIntake funnel = new FunnelIntake(funnelMotorSubsystem);
@@ -52,29 +54,41 @@ public class RobotContainer {
 
   private final Telemetry logger = new Telemetry(MaxSpeed);
 
+// Initializes an AnalogPotentiometer on analog port 0
+// The full range of motion (in meaningful external units) is 0-180 (this could be degrees, for instance)
+// The "starting point" of the motion, i.e. where the mechanism is located when the potentiometer reads 0v, is 30.
+
+AnalogPotentiometer pot = new AnalogPotentiometer(0, 180, 30);
+
+
+
   private void configureBindings() {
     drivetrain.setDefaultCommand( // Drivetrain will execute this command periodically
-        drivetrain.applyRequest(() -> drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with
+        drivetrain.applyRequest(() -> drive.withVelocityX(-joystick1.getLeftY() * MaxSpeed) // Drive forward with
                                                                                            // negative Y (forward)
-            .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-            .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
+            .withVelocityY(-joystick1.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+            .withRotationalRate(-joystick1.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
         ));
 
-    joystick.rightBumper().whileTrue(drivetrain.applyRequest(() -> brake));
-    joystick.leftBumper().whileTrue(drivetrain
-        .applyRequest(() -> point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
+    joystick1.rightBumper().whileTrue(drivetrain.applyRequest(() -> brake));
+    joystick1.leftBumper().whileTrue(drivetrain
+        .applyRequest(() -> point.withModuleDirection(new Rotation2d(-joystick1.getLeftY(), -joystick1.getLeftX()))));
 
-    joystick.b().whileTrue(shooter);
-    joystick.back().whileTrue(funnel);
-    joystick.start().whileTrue(funnelReverse);
-    joystick.y().whileTrue(AngleUp);
-    joystick.x().whileTrue(AngleUp);
-    joystick.leftTrigger().whileTrue(up);
-    joystick.rightTrigger().whileTrue(down);
+    joystick1.b().whileTrue(shooter);
+    joystick1.back().whileTrue(funnel);
+    joystick1.start().whileTrue(funnelReverse);
+    joystick1.y().whileTrue(AngleUp);
+    joystick1.x().whileTrue(AngleUp);
+    joystick1.leftTrigger().whileTrue(up);
+    joystick1.rightTrigger().whileTrue(down);
+    joystick2.a().onTrue(pot.get());  
+    //i don't know how to get the readings from the potentiometer
+    //chief delphi kinda helps but is still vague
+
 
 
     // reset the field-centric heading on left bumper press
-    joystick.a().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative()));
+    joystick1.a().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative()));
 
     if (Utils.isSimulation()) {
       drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
