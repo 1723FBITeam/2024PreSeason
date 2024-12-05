@@ -27,6 +27,7 @@ import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.FunnelMotorSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
+import edu.wpi.first.wpilibj.DigitalInput;
 
 public class RobotContainer {
   private double MaxSpeed = TunerConstants.kSpeedAt12VoltsMps; // kSpeedAt12VoltsMps desired top speed
@@ -60,6 +61,8 @@ public class RobotContainer {
 
 AnalogPotentiometer pot = new AnalogPotentiometer(0, 180, 30);
 
+// Initializes a DigitalInput on DIO 0
+DigitalInput input = new DigitalInput(0);
 
 
   private void configureBindings() {
@@ -82,6 +85,8 @@ AnalogPotentiometer pot = new AnalogPotentiometer(0, 180, 30);
     joystick1.leftTrigger().whileTrue(up);
     joystick1.rightTrigger().whileTrue(down);
     joystick2.a().onTrue(pot.get());  
+    joystick2.b().onTrue(input.get());  
+
     //i don't know how to get the readings from the potentiometer
     //chief delphi kinda helps but is still vague
 
